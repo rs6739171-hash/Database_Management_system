@@ -1,0 +1,29 @@
+[project]
+name = "database-management-system"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "rs6739171-hash", email = "rs6739171@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "asyncpg>=0.32.0",
+    "bcrypt<=4.0.1",
+    "fastapi[standard]>=0.165.0",
+    "greenlet>=3.5.6",
+    "passlib[bcrypt]>=1.7.4",
+    "pydantic>=2.14.4",
+    "pyjwt>=2.15.1",
+    "sqlmodel>=0.0.50",
+]
+
+[project.scripts]
+database-management-system = "database_management_system:main"
+
+[build-system]
+requires = ["uv_build>=0.12.1,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.pyright]
+extraPaths = ["."]
