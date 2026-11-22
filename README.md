@@ -146,6 +146,17 @@ Once the server is running, explore the interactive documentation:
 | `DELETE` | `/product/?id={id}` | Delete a product by ID |
 | `POST` | `/seller/signup` | Register a new seller (with bcrypt password hashing) |
 | `POST` | `/seller/login` | Seller login and authentication |
+| `GET` | `/seller/dashboard` | Protected seller dashboard (Bearer token) |
+
+---
+
+## 🧪 Running Tests
+
+Execute the complete asynchronous test suite using `pytest`:
+
+```bash
+pytest
+```
 
 ---
 

@@ -2,8 +2,10 @@ from typing import Annotated
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from app.database.models import Seller
 from app.schema.seller import SellerCreate
-from fastapi import APIRouter, Depends
-from app.api.dependencies import SellerDep
+from fastapi import APIRouter, Depends, HTTPException
+from app.api.dependencies import SellerDep, SellerServiceDep
+
+
 
 router = APIRouter(prefix="/seller", tags=["Seller"])
 
@@ -16,3 +18,9 @@ async def register_seller(seller : SellerCreate,service:SellerDep)-> Seller:
 async def login(request_form : Annotated[OAuth2PasswordRequestForm, Depends()], service : SellerDep):
     token = await service.login(request_form.username,request_form.password)
     return {"access_token": token , "token_type":"bearer"}
+
+@router.get("/dashboard")
+async def get_dashboard(seller: SellerServiceDep):
+    if seller:
+        return {"Details": seller, "Status": "Successfully Logged In"}
+    raise HTTPException(status_code=401, detail="Invalid Token")

@@ -1,3 +1,4 @@
+from app.utils import generate_access_token
 from datetime import timedelta, datetime, timezone
 import jwt
 from fastapi import HTTPException
@@ -23,6 +24,9 @@ class SellerService:
         await self.session.commit()
         await self.session.refresh(seller)
         return seller
+    
+    async def get(self, id: int) -> Seller | None:
+        return await self.session.get(Seller, id)
 
     async def login(self,email,password)->str:
         result =await self.session.execute(select(Seller).where(Seller.email == email))
@@ -32,15 +36,12 @@ class SellerService:
                 status_code=401,
                 detail = "Email or Password is not correct")
 
-        #generate access token
-        return jwt.encode(
-            payload = {
+        #generate access tode()
+        token = generate_access_token(
+            {
                 "user":{
-                    "name": seller.name,
-                    "email": seller.email
-                },
-                "exp":datetime.now(timezone.utc)+timedelta(minutes=30)
-            },
-            algorithm=st.JWT_ALGORITHM,
-            key = st.JWT_SECRET
+                    "id": seller.id,
+                }
+            }
         )
+        return token

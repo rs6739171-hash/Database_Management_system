@@ -1,4 +1,4 @@
-from app.api.dependencies import ProductDep
+from app.api.dependencies import ProductDep, SellerServiceDep
 from fastapi import APIRouter, HTTPException
 from app.schema.models import ProductCreate, ProductUpdate
 from app.database import Product
@@ -7,7 +7,7 @@ router = APIRouter(prefix="/product", tags=["Products"])
 
 
 @router.get("/", response_model=Product)
-async def get_product(id: int, service: ProductDep) -> Product:
+async def get_product(id: int, service: ProductDep,_ : SellerServiceDep) -> Product:
     product = await service.get(id)
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
@@ -15,12 +15,12 @@ async def get_product(id: int, service: ProductDep) -> Product:
 
 
 @router.post("/", response_model=Product)
-async def create_product(data: ProductCreate, service: ProductDep) -> Product:
+async def create_product(data: ProductCreate, service: ProductDep, _ : SellerServiceDep) -> Product:
     return await service.add(data)
 
 
 @router.patch("/", response_model=Product)
-async def patch_product(id: int, body: ProductUpdate, service: ProductDep) -> Product:
+async def patch_product(id: int, body: ProductUpdate, service: ProductDep, _: SellerServiceDep) -> Product:
     data = body.model_dump(exclude_none=True)
     if not data:
         raise HTTPException(status_code=400, detail="No data provided")
@@ -31,7 +31,7 @@ async def patch_product(id: int, body: ProductUpdate, service: ProductDep) -> Pr
 
 
 @router.delete("/")
-async def delete_product(id: int, service: ProductDep) -> dict[str, str]:
+async def delete_product(id: int, service: ProductDep, _: SellerServiceDep) -> dict[str, str]:
     success = await service.delete(id)
     if not success:
         raise HTTPException(status_code=404, detail="Product not found")
