@@ -1,3 +1,4 @@
+from uuid import UUID,uuid4
 from enum import Enum
 import random
 from pydantic import BaseModel, Field
@@ -32,10 +33,10 @@ class BaseProduct(BaseModel):
     )
 
 class ProductCreate(BaseProduct):
-    pass
+    id:UUID=Field(default_factory=uuid4)
 
 class ProductRead(BaseProduct):
-    pass
+    id:UUID=Field(default_factory=uuid4)
 
 class ProductUpdate(BaseModel):
     name: str | None = Field(

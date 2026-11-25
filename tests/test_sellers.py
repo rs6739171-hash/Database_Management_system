@@ -130,3 +130,61 @@ async def test_seller_dashboard_invalid_token(client: AsyncClient):
         headers={"Authorization": "Bearer invalid.token.here"},
     )
     assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_seller_dashboard_blacklisted_token(client: AsyncClient):
+    from unittest.mock import AsyncMock, patch
+
+    await client.post(
+        "/seller/signup",
+        json={
+            "name": "BL User",
+            "email": "bl@example.com",
+            "password": "blpassword",
+        },
+    )
+    login_res = await client.post(
+        "/seller/login",
+        data={"username": "bl@example.com", "password": "blpassword"},
+    )
+    token = login_res.json()["access_token"]
+
+    with patch("app.api.dependencies.is_jti_blacklisted", new_callable=AsyncMock) as mock_bl:
+        mock_bl.return_value = True
+        response = await client.get(
+            "/seller/dashboard",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert response.status_code == 401
+        assert response.json()["detail"] == "Invalid Token"
+
+
+@pytest.mark.asyncio
+async def test_seller_logout_success(client: AsyncClient):
+    await client.post(
+        "/seller/signup",
+        json={
+            "name": "Logout User",
+            "email": "logout@example.com",
+            "password": "logoutpass123",
+        },
+    )
+    login_res = await client.post(
+        "/seller/login",
+        data={"username": "logout@example.com", "password": "logoutpass123"},
+    )
+    token = login_res.json()["access_token"]
+
+    response = await client.get(
+        "/seller/logout",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == 200
+    assert response.json()["message"] == "Logout Successful"
+
+
+@pytest.mark.asyncio
+async def test_seller_logout_unauthorized(client: AsyncClient):
+    response = await client.get("/seller/logout")
+    assert response.status_code == 401

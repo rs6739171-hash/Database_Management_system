@@ -1,4 +1,9 @@
+import sqlite3
+import uuid
+from unittest.mock import AsyncMock, patch
 import pytest_asyncio
+
+sqlite3.register_adapter(uuid.UUID, lambda u: str(u))
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlmodel import SQLModel
@@ -16,11 +21,15 @@ test_async_session = async_sessionmaker(
 
 @pytest_asyncio.fixture(autouse=True)
 async def init_test_db():
-    async with test_engine.begin() as conn:
-        await conn.run_sync(SQLModel.metadata.create_all)
-    yield
-    async with test_engine.begin() as conn:
-        await conn.run_sync(SQLModel.metadata.drop_all)
+    with patch("app.api.dependencies.is_jti_blacklisted", new_callable=AsyncMock) as mock_bl, \
+         patch("app.api.routers.sellers.add_jti_to_blacklist", new_callable=AsyncMock) as mock_add_bl:
+        mock_bl.return_value = False
+        mock_add_bl.return_value = None
+        async with test_engine.begin() as conn:
+            await conn.run_sync(SQLModel.metadata.create_all)
+        yield
+        async with test_engine.begin() as conn:
+            await conn.run_sync(SQLModel.metadata.drop_all)
 
 
 async def override_get_session():

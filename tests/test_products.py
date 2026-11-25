@@ -1,3 +1,4 @@
+from uuid import uuid4
 import pytest
 from httpx import AsyncClient
 
@@ -56,7 +57,7 @@ async def test_get_product_success(auth_client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_get_product_not_found(auth_client: AsyncClient):
-    response = await auth_client.get("/product/?id=99999")
+    response = await auth_client.get(f"/product/?id={uuid4()}")
     assert response.status_code == 404
     assert response.json()["detail"] == "Product not found"
 
@@ -97,7 +98,7 @@ async def test_patch_product_empty_body(auth_client: AsyncClient):
 @pytest.mark.asyncio
 async def test_patch_product_not_found(auth_client: AsyncClient):
     response = await auth_client.patch(
-        "/product/?id=99999",
+        f"/product/?id={uuid4()}",
         json={"price": 50.0},
     )
     assert response.status_code == 404
@@ -123,6 +124,6 @@ async def test_delete_product_success(auth_client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_delete_product_not_found(auth_client: AsyncClient):
-    response = await auth_client.delete("/product/?id=99999")
+    response = await auth_client.delete(f"/product/?id={uuid4()}")
     assert response.status_code == 404
     assert response.json()["detail"] == "Product not found"

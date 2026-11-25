@@ -40,7 +40,7 @@ class SellerService:
         token = generate_access_token(
             {
                 "user":{
-                    "id": seller.id,
+                    "id": str(seller.id),
                 }
             }
         )

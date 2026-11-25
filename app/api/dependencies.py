@@ -1,4 +1,5 @@
-
+from uuid import UUID
+from app.database.reddis import is_jti_blacklisted
 from app.database.models import Seller
 from app.core.security import auth2_scheme
 from app.utils import decode_access_token
@@ -15,9 +16,9 @@ def get_product_service(session:SessionDep):
 
 # Acess user data
 
-def get_access_token(token:Annotated[str,Depends(auth2_scheme)])->dict:
+async def get_access_token(token:Annotated[str,Depends(auth2_scheme)])->dict:
     data = decode_access_token(token)
-    if data is None:
+    if data is None or not data.get("jti") or await is_jti_blacklisted(data["jti"]):
         raise HTTPException(status_code=401, detail="Invalid Token")     
     return data
 
@@ -27,7 +28,7 @@ async def get_current_seller(
     user_id = token_data.get("user", {}).get("id") if isinstance(token_data, dict) else None
     if not user_id:
         raise HTTPException(status_code=401, detail="Invalid Token")
-    seller = await session.get(Seller, user_id)
+    seller = await session.get(Seller, UUID(user_id))
     return seller
 
 CurrentSellerDep = Annotated[Seller, Depends(get_current_seller)]

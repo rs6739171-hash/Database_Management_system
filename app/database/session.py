@@ -5,12 +5,13 @@ from typing import Annotated
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlmodel import SQLModel
 
-engine = create_async_engine(settings.POSTGRES_URL, echo=False)
+engine = create_async_engine(settings.POSTGRES_URL, echo=False, pool_pre_ping=True)
 
 async_session = async_sessionmaker(bind = engine,class_=AsyncSession,expire_on_commit=False)
 
 
 async def create_db_table():
+    from app.database.models import Product, Seller  # noqa: F401
     async with engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
 
